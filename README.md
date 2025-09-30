@@ -1,17 +1,13 @@
-## Foundry
+## solidity-bls12381
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+**This code is not audited. Use at your own risk.**
 
-Foundry consists of:
+On-chain BLS12-381 signature verification proof of concept.
+- Powered by EIP-2537 precompiles.
+- Supports minimal-pubkey-size variant, where pubkey on G1 and sig on G2.
+- Supports minimal-signature-size variant, where pubkey on G2 and sig on G1.
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
-
-## Documentation
-
-https://book.getfoundry.sh/
+See [BLS.t.sol](./test/BLS.t.sol) for usage.
 
 ## Usage
 
@@ -27,40 +23,8 @@ $ forge build
 $ forge test
 ```
 
-### Format
+## Acknowledgements
 
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+This library is based on following works:
+- [bls-solidity](https://github.com/randa-mu/bls-solidity) by @bbjubjub2494 for BLS2.sol.
+- [bls12-381-hash-to-curve](https://github.com/ethyla/bls12-381-hash-to-curve) by @ethyla for HashToCurve.sol.
