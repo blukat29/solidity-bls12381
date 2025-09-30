@@ -317,7 +317,7 @@ library HashToCurve {
         assembly {
             let success := staticcall(
                 100000, /// gas should be 600
-                0x0a, // address of BLS12_G1ADD
+                0x0b, // address of BLS12_G1ADD
                 input, //input offset
                 256, // input size
                 result, // output offset
@@ -390,7 +390,7 @@ library HashToCurve {
         assembly {
             let success := staticcall(
                 100000, /// gas should be 5500
-                0x11, // address of BLS12_MAP_FP_TO_G1
+                0x10, // address of BLS12_MAP_FP_TO_G1
                 input, //input offset
                 64, // input size
                 result, // output offset
@@ -422,7 +422,7 @@ library HashToCurve {
         assembly {
             let success := staticcall(
                 200000, /// gas should be 110000
-                0x12, // address of BLS12_MAP_FP2_TO_G2
+                0x11, // address of BLS12_MAP_FP2_TO_G2
                 input, //input offset
                 128, // input size
                 result, // output offset
