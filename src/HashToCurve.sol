@@ -1,41 +1,42 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-struct FieldPoint {
-    bytes32[2] u;
-}
-
-struct FieldPoint2 {
-    bytes32[2] u;
-    bytes32[2] u_I;
-}
-
-struct G1Point {
-    bytes x;
-    bytes y;
-}
-
-struct G2Point {
-    bytes x;
-    bytes x_I;
-    bytes y;
-    bytes y_I;
-}
 
 /// @title Hash to curve for the BLS12-381 curve
 /// @author ethyla
 /// @dev Uses the eip-2537 precompiles
 /// @custom:experimental This is an experimental contract, no guarantees are made
-contract HashToCurve {
+library HashToCurve {
+    struct FieldPoint {
+        bytes32[2] u;
+    }
+
+    struct FieldPoint2 {
+        bytes32[2] u;
+        bytes32[2] u_I;
+    }
+
+    struct G1Point {
+        bytes x;
+        bytes y;
+    }
+
+    struct G2Point {
+        bytes x;
+        bytes x_I;
+        bytes y;
+        bytes y_I;
+    }
+
     /// @notice Computes a point in G1 from a message
     /// @dev Uses the eip-2537 precompiles
     /// @param message Arbitrarylength byte string to be hashed
     /// @param dst The domain separation tag
     /// @return A point in G1
     function hashToCurveG1(
-        bytes calldata message,
-        bytes calldata dst
-    ) external view returns (G1Point memory) {
+        bytes memory message,
+        bytes memory dst
+    ) public view returns (G1Point memory) {
         // 1. u = hash_to_field(msg, 2)
         FieldPoint[2] memory u = hashToFieldFp(message, dst);
         // 2. Q0 = map_to_curve(u[0])
@@ -60,20 +61,10 @@ contract HashToCurve {
     /// @param dst The domain separation tag
     /// @return A point in G2
     function hashToCurveG2(
-        bytes calldata message,
-        bytes calldata dst
-    ) external view returns (G2Point memory) {
-        // 1. u = hash_to_field(msg, 2)
-        FieldPoint2[2] memory u = hashToFieldFp2(message, dst);
-        // 2. Q0 = map_to_curve(u[0])
-        bytes32[8] memory q0 = _mapFp2ToG2(u[0]);
-        // 3. Q1 = map_to_curve(u[1])
-        bytes32[8] memory q1 = _mapFp2ToG2(u[1]);
-        // 4. R = Q0 + Q1              # Point addition
-        bytes32[8] memory r = _addG2(q0, q1);
-        // 5. P = clear_cofactor(R)
-        // Not needed as map fp to g1 already does it
-        // 6. return P
+        bytes memory message,
+        bytes memory dst
+    ) public view returns (G2Point memory) {
+        bytes32[8] memory r = hashToCurveG2Array(message, dst);
         G2Point memory p = G2Point({
             x: bytes.concat(r[0], r[1]),
             x_I: bytes.concat(r[2], r[3]),
@@ -84,14 +75,31 @@ contract HashToCurve {
         return p;
     }
 
+    function hashToCurveG2Array(
+        bytes memory message,
+        bytes memory dst
+    ) public view returns (bytes32[8] memory) {
+        // 1. u = hash_to_field(msg, 2)
+        FieldPoint2[2] memory u = hashToFieldFp2(message, dst);
+        // 2. Q0 = map_to_curve(u[0])
+        bytes32[8] memory q0 = _mapFp2ToG2(u[0]);
+        // 3. Q1 = map_to_curve(u[1])
+        bytes32[8] memory q1 = _mapFp2ToG2(u[1]);
+        // 4. R = Q0 + Q1              # Point addition
+        bytes32[8] memory r = _addG2(q0, q1);
+        // 5. P = clear_cofactor(R)
+        // Not needed as map fp to g1 already does it
+        return r;
+    }
+
     /// @notice Computes a field point from a message
     /// @dev Follows https://datatracker.ietf.org/doc/html/rfc9380#section-5.2
     /// @param message Arbitrarylength byte string to be hashed
     /// @param dst The domain separation tag
     /// @return Two field points
     function hashToFieldFp(
-        bytes calldata message,
-        bytes calldata dst
+        bytes memory message,
+        bytes memory dst
     ) public view returns (FieldPoint[2] memory) {
         // len_in_bytes = count * m * HTF_L
         // so always 2 * 1 * 64 = 128
@@ -124,8 +132,8 @@ contract HashToCurve {
     /// @param dst The domain separation tag
     /// @return Two field points
     function hashToFieldFp2(
-        bytes calldata message,
-        bytes calldata dst
+        bytes memory message,
+        bytes memory dst
     ) public view returns (FieldPoint2[2] memory) {
         // 1. len_in_bytes = count * m * L
         // so always 2 * 2 * 64 = 256
@@ -163,8 +171,8 @@ contract HashToCurve {
     /// @param lenInBytes The length of the requested output in bytes
     /// @return A field point
     function expandMsgXmd(
-        bytes calldata message,
-        bytes calldata dst,
+        bytes memory message,
+        bytes memory dst,
         uint16 lenInBytes
     ) public pure returns (bytes32[] memory) {
         // 1.  ell = ceil(len_in_bytes / b_in_bytes)
