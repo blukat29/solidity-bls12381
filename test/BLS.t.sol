@@ -5,6 +5,7 @@ import { console } from "forge-std/console.sol";
 
 import { BLS2 } from "src/BLS2.sol";
 import { HashToCurve } from "src/HashToCurve.sol";
+import { BlsVerify } from "src/BlsVerify.sol";
 
 contract BLSTest is Test {
     // Taken from https://github.com/ethereum/bls12-381-tests
@@ -113,5 +114,10 @@ contract BLSTest is Test {
         }
         assert(success);
         assert(out[0] != 0);
+    }
+
+    function test_verify() public view {
+        bool success = BlsVerify.verifyMinPubkeySize(testPubBytesCompressed, testSigBytesUncompressed, testMsgBytes, dst);
+        assert(success);
     }
 }
