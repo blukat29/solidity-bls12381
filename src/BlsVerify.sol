@@ -41,4 +41,23 @@ library BlsVerify {
         }
         return success && out[0] != 0;
     }
+
+    // @notice Verify a BLS12-381 signature with a minimal-signature-size variant.
+    // @param pubKey Uncompressed public key on G2 curve (192 bytes)
+    // @param sig Uncompressed signature on G1 curve (96 bytes)
+    // @param message The message of arbitrary length
+    // @param dst The domain separation tag
+    // @return True if the signature is valid
+    function verifyMinSignatureSize(
+      bytes memory pubKey,
+      bytes memory sig,
+      bytes memory message,
+      bytes memory dst
+    ) public view returns (bool) {
+        BLS2.PointG2 memory P = BLS2.g2Unmarshal(pubKey);
+        BLS2.PointG1 memory S = BLS2.g1Unmarshal(sig);
+        BLS2.PointG1 memory H = BLS2.hashToPoint(dst, message);
+        (bool pairingSuccess, bool callSuccess) = BLS2.verifySingle(S, P, H);
+        return pairingSuccess && callSuccess;
+    }
 }

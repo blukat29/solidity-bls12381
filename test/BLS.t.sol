@@ -13,7 +13,7 @@ contract BLSTest is Test {
     bytes testPubBytesCompressed = hex"b53d21a4cfd562c469cc81514d4ce5a6b577d8403d32a394dc265dd190b47fa9f829fdd7963afdf972e5e77854051f6f";
     bytes testSigBytesCompressed = hex"ae82747ddeefe4fd64cf9cedb9b04ae3e8a43420cd255e3c7cd06a8d88b7c7f8638543719981c5d16fa3527c468c25f0026704a6951bde891360c7e8d12ddee0559004ccdbe6046b55bae1b257ee97f7cdb955773d7cf29adf3ccbb9975e4eb9";
     bytes testMsgBytes = hex"abababababababababababababababababababababababababababababababab";
-    bytes dst = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
+    bytes testDst = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 
     // Intermediate data calculated using '@noble/curves/bls12-381.js'
     bytes testSigBytesUncompressed = hex"0e82747ddeefe4fd64cf9cedb9b04ae3e8a43420cd255e3c7cd06a8d88b7c7f8638543719981c5d16fa3527c468c25f0026704a6951bde891360c7e8d12ddee0559004ccdbe6046b55bae1b257ee97f7cdb955773d7cf29adf3ccbb9975e4eb915e60d5b66a43e074b801a07df931a17505048f7f96dc80f857b638e505868dc008cc9c26ed5b8495e9c181b67dc4c2317d9d447337a9cc6d2956b9c6dd7c23c0bfb73855e902061bcb9cb9d40e43c38140091e638ffcffc7261366018900047";
@@ -76,7 +76,7 @@ contract BLSTest is Test {
     }
 
     function test_HashToG2() public view {
-        bytes32[8] memory h = HashToCurve.hashToCurveG2Array(testMsgBytes, dst);
+        bytes32[8] memory h = HashToCurve.hashToCurveG2Array(testMsgBytes, testDst);
         uint256[8] memory H;
         for (uint256 i = 0; i < 8; i++) {
             H[i] = uint256(h[i]);
@@ -116,8 +116,18 @@ contract BLSTest is Test {
         assert(out[0] != 0);
     }
 
-    function test_verify() public view {
-        bool success = BlsVerify.verifyMinPubkeySize(testPubBytesCompressed, testSigBytesUncompressed, testMsgBytes, dst);
+    function test_verifyMinPubkeySize() public view {
+        bool success = BlsVerify.verifyMinPubkeySize(testPubBytesCompressed, testSigBytesUncompressed, testMsgBytes, testDst);
+        assert(success);
+    }
+
+    function test_verifyMinSignatureSize() public view {
+        // Taken from https://github.com/randa-mu/bls-solidity/blob/main/test/data/testcases.json
+        bytes memory message = hex"68656c6c6f";
+        bytes memory pubKey = hex"0eb3c62c162b4bf3da2df034c4ebf8f753c929a6e2424269f41558c8d3c6358a38bc199199a3cc4f3c275525f72e6ed00ea36aa928f4d6a58765ac61398baed7d1b195b71f7de3714fb0b87edf71792313a5b1650264cbfff03f78bafbd6590001d140f45a64fcf285f51f2e55ed11432e3829cd027dc2e6adb4a2fbc99e2aac0faf0aef517b525a3d5d80aa6cc41acd12c785bd8662d22ce36627e15ea5de6d3cb642be582410da7c95dc1ffc9bff902f05fff594f4956b2137cde3f172c71d";
+        bytes memory sig = hex"194929b59a7ae688de17265497aadfee598969e2e31e72d98a492a6c2999d3712b08d2800c39956e934bd55215f20e2f09c9dc98ea512821c8b4613e738f57bf87d0ad7fd9a0af37a64ce8d291863389462611ee1ecacf2ac499eee6f92ebbf0";
+        bytes memory dst = "BLS12381G1_XMD:SHA-256_SSWU_RO";
+        bool success = BlsVerify.verifyMinSignatureSize(pubKey, sig, message, dst);
         assert(success);
     }
 }
